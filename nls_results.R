@@ -1,0 +1,158 @@
+#' @name nls_results
+#' @title Array of Results from all NLS Models eq1-eq11
+#'
+#' @description This function generates an array of results from the NLS models
+#'     presented in Lobo et al. (2013) and Davis et al. (2024). The array
+#'     includes all calculated values/model parameters for each NLS model (eq),
+#'     predicted values of the NLS curve, and goodness of fit statistics -
+#'     mean squared error (MSE) and r2 values- for each predicted curve and
+#'     calculated value.
+#'
+#' @usage
+#' ```R
+#' nls_results <- function(
+#'     data,
+#'     dat_wide = NULL,
+#'     spec = NULL,
+#'     PARi = c(0, 50, 100, 250, 500, 1000, 1500, 2000, 2500),
+#'     PARi_fine = seq(0,6000,by = .1),
+#'     eqs = paste("eq", c(1, 2, 3, 4, 5, 6, 8, 9, 11), sep = ""),
+#'     par_names = c(names(eq9(return = "calc")),
+#'                     "beta", "gamma", "theta", "Isat")
+#'     return = all)
+#' ```
+#' @param data A data frame of measured input data with a column named
+#'     `SampleID`for each unique plant observed, a column named `PARi` to
+#'     indicate light intensities measured, and a column named `A` for measured
+#'     measurer carbon assimilation rates.
+#' @param dat_wide A wide-format data frame used to extract observed `PARi` and
+#'     `A` values for each `SampleID` taken, defaults to do transform 'dat_wide'
+#'     from 'data' automatically as long as columns are correctly labeled.
+#' @param specs A character or factor vector of individual identifiers to
+#'     subset the data by `SampleID`, defaults to inds, a list of all `SampleID`
+#' @param eqs A character vector of equation names to be fitted. Defaults to the
+#'     9 equations programmed in this package:
+#'     (`eq1`, `eq2`, `eq3`, `eq4`, `eq5`, `eq6`, `eq8`, `eq9`, `eq11`).
+#' @param par_names A character or factor vector of parameters calculated from
+#'     the NLS models to include in the array of results. Defaults to parameters
+#'     calculated from all 9 models in this package with the string,
+#'     par_names <- c(names(eq9(return = "calc")),
+#'                    "beta", "gamma", "theta", "Isat")
+#'     but can be modified to best suit your needs.
+#' @param PARi A numeric vector of `PARi` values in which carbon assimilation
+#'     was measured.
+#'     Defaults to c(0, 50, 100, 250, 500, 1000, 1500, 2000, 2500).
+#' @param PARi_fine A finer numeric vector of `PARi` values for estimating
+#'     response across a continuous light range, defaults to seq(0,6000,by = .1)
+#'     for fine scale predictions.
+#'
+#' @return A list containing the following elements:
+#' \describe{
+#'   \item{res}{An array of results. The array dimensions are:
+#'    number of photosynthetic models (eq) tested x
+#'    (number of parameters + 2 * length(PARi)) x length(inds).}
+#'   \item{fitted_curves}{A list of fitted curves for each equation and
+#'    individual.}
+#'   \item{r2}{A matrix of `r2` values for each individual and equation.}
+#'   \item{mse}{A matrix of `mse` values for each individual and equation.}
+#' }
+#'
+#' @details The function fits each equation from the `eqs` list to the subset
+#'     of `data` corresponding to each individual in `inds`. It then extracts
+#'     calculated parameters, predicted values, and observed `PARi` values for
+#'     the given individual. The results are stored in an array, and the
+#'     goodness-of-fit metrics (`r2` and `mse`) are saved in separate matrices.
+#'
+#' @references
+#'     Davis, R.E., C. M. Mason, E. W. Goolsby 2024 Comparative evolution of
+#'     photosynthetic light response curve: approaches and pitfalls in
+#'     phylogenetic modeling of a function-valued trait. IJPS
+#'
+#'     Lobo, F. de A., M. P. de Barros, H. J. Dalmagro,  .C. Dalmolin,
+#'     W. E. Pereira, É.C. de Souza, G. L. Vourlitis and C. E. Rodriguez Ortiz
+#'     2013 Fitting net photosynthetic light-response curves with Microsoft
+#'     Excel – a critical look at the models. Photosynthetica 51 (3): 445-456.
+#'
+#' @examples
+#' ```R
+#' PARi <- c(0, 100, 200, 300, 400, 800, 1200, 1500)
+#' PARi_fine <- seq(0, 1500, by = 1)
+#' par_names <- c("Pmax", "Icomp", "phi_Icomp", "Rd", "I15, I25", "I85", "I95")
+#' dat_wide <- data %>% pivot_wider(id_cols = c(Species,SampleID),
+#'                    names_from = PARi, names_prefix = "PARi_",values_from = A)
+#' specs <- unique(data$SampleID)
+#'
+#' my_results <- nls_results(data = data, dat_wide = dat_wide, specs = specs,
+#'                            PARi = PARi, PARi_fine = PARi_fine,
+#'                              par_names = par_names)
+#'
+#' # Access the results array
+#' result_array <- my_results$res
+#'
+#' # Access the fitted curves
+#' fitted_curves <- my_results$fitted_curves
+#'
+#' # Access r2 and mse matrices
+#' r2_matrix <- my_results$r2
+#' mse_matrix <- my_results$mse
+#' ```
+#' @export
+  nls_results <- function(data,
+                          dat_wide = NULL,
+                          specs,
+                    PARi = c(0, 50, 100, 250, 500, 1000, 1500, 2000, 2500),
+                    PARi_fine = seq(0,6000,by = .1),
+                    eqs = paste("eq", c(1, 2, 3, 4, 5, 6, 8, 9, 11), sep = ""),
+                    par_names = c(names(eq9(return = "calc")), "beta", "gamma",
+                             "theta", "Isat")) {
+  # Optionally subset species from inds
+  inds <- unique(data$SampleID)
+  selected_inds <- if (!is.null(specs)) specs else inds
+
+  # Transform data to long data format
+  data_wide <- if (!is.null(dat_wide)) dat_wide else dat_wide <-
+      data %>% pivot_wider(id_cols = c(Species,SampleID),
+                           names_from = PARi,
+                           names_prefix = "PARi_",
+                           values_from = A)
+
+  # Initialize lists for fitted curves and results
+  fitted_curves <- setNames(vector("list", length(eqs)), eqs)
+  fitted_curves <- lapply(fitted_curves, function(X) setNames(
+                                    vector("list", length(selected_inds)),
+                                    selected_inds))
+
+  nls_fits <- curve_derived_results <- nls_fits_sp <-
+    curve_derived_results_sp <- setNames(vector("list", length(eqs)), eqs)
+
+  # Create an array for results
+  res <- array(dim = c(9, length(par_names) + length(PARi) * 2,
+                       length(selected_inds)))
+  dimnames(res) <- list(paste("eq", c(1:6, 8:9, 11), sep = ""),
+                    c(par_names, paste("PAR_", PARi, sep = ""),
+                     paste("obs_PAR_", PARi, sep = "")), selected_inds)
+
+  # Initialize matrices for r2 and mse
+  mse <- r2 <- matrix(NA, nrow = length(selected_inds), ncol = 9,
+                      dimnames = list(selected_inds, eqs))
+
+  # Loop through equations and individuals
+  for (e in 1:9) {
+    for (i in 1:length(selected_inds)) {
+      try({
+        out <- get(eqs[e])(data = data[data$SampleID == selected_inds[i], ],
+                           return = "all")
+        fitted_curves[[e]][[selected_inds[i]]] <- out
+        res[e, , i] <- c(out$calc[par_names],
+                         out$pred_fine[which(PARi_fine %in% PARi)],
+                         unlist(dat_wide[dat_wide$SampleID == selected_inds[i],
+                                         paste("PARi_", PARi, sep = "")]))
+        r2[i, e] <- out$fit[["r2"]]
+        mse[i, e] <- out$fit[["mse"]]
+      }, silent = TRUE)
+    }
+  }
+
+  # Return the results
+  return(list(res = res, fitted_curves = fitted_curves, r2 = r2, mse = mse))
+}

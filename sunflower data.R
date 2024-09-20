@@ -1,0 +1,97 @@
+#' @name sunflowers
+#'
+#' @title Light Response Curves from a Common Garden Experiment in *Helianthus*
+#'
+#' @docType data
+#'
+#' @description This dataset contains photosynthetic light response curves for
+#'     28 sunflower species in the genus *Helianthus*. The data was gathered in
+#'     a common garden to evaluate phylogenetic change to photosynthetic
+#'     response across as a function-valued trait (Davis et al. 2024).
+#'
+#' @details All plants were grown in fertilized 1 gallon pots during August-
+#'     December 2019 at the University of Central Florida's Transgenic
+#'     Greenhouse. Measurements were taken for two hours before and after solar
+#'     noon with the Portable Photosynthetic Systems (PPS) TARGAS-1 on the most
+#'     recently expanded full leaf during the juvenile stage just before
+#'     flowering (V4-6) (NDSU Stages of Sunflower Development).  The TARGAS-1
+#'     portable leaf cuvette (PLC) was clamped on the leaf perpendicular to the
+#'     leaf margin, and photosynthetic measurements were taken at approximately
+#'     420 ppm CO2, ambient humidity, and 500 ppm flow. Photosynthetic responses
+#'     were recorded at 9 levels with an acclimation of 2-5 minutes at PARi 0,
+#'     PARi 50, PARi 100, PARi 250, PARi 500, PARi 1000, PARi 2000,
+#'     PARi 2500 (µmol s/m2). The data was manually curated such that duplicate
+#'     instantaneous assimilation points were removed and only one single
+#'     representative sample from each replicate was used in analysis. The data
+#'     set includes the Sample name, the species name, the replicate number,
+#'     and 19 other variables obtained from the TARGAS-1 measurement.
+#'
+#'@format A data frame with 666 rows and 22 variables:
+#' \describe{
+#'   \item{SampleID}{A unique identifier for each sample, a combination of
+#'   Species_Replicate_Date (character).}
+#'   \item{Species}{The species name of the sunflower (character).}
+#'   \item{Replicate}{The number assigned to indicate repeated individuals of
+#'   the same species (numeric).}
+#'   \item{Date}{The day at which the measurement was taken (character,
+#'   DD:MM:YY format).}
+#'   \item{Time}{The time at which the measurement was taken (character,
+#'   HH:MM format).}
+#'   \item{CO2r}{The TARGAS-1 reference CO2 (µmol CO2 mol^-1, numeric).}
+#'   \item{CO2a}{The TARGAS-1 ambient CO2 reading (µmol CO2 mol^-1, numeric).}
+#'   \item{H2Or}{Humidity reading measured by the TARGAS-1 reference during
+#'   the time of measurement (mb, numeric).}
+#'   \item{H2Oa}{Humidity reading measured in the air by the TARGAS-1 during
+#'   the time of measurement (mb, numeric).}
+#'   \item{atm}{Atmospheric pressured at the measurement (mb, numeric).}
+#'   \item{Flow.Supply}{Air flow moving through the TARGAS-1 (cc/min, numeric).}
+#'   \item{Flow.sample}{Air flow passing back into the TARGAS-1 from the PLC
+#'   (cc/min, numeric).}
+#'   \item{PARe}{Photosynthetically Active Radiation levels in the environment,
+#'   measured at the PLC (µmol m^-2 s^-1, numeric).}
+#'   \item{PARi}{Photosynthetically Active Radiation levels on the leaf
+#'   (µmol m^-2 s^-1, numeric).}
+#'   \item{Tleaf}{Leaf temperature in the PLC during the measurement
+#'   (degrees Celsius, numeric).}
+#'   \item{Trans}{Transpiration rate (mmol H2O m^-2 s^-1, numeric).}
+#'   \item{VPD}{Vapor pressure deficit during the measurement (mb, numeric).}
+#'   \item{gs}{Stomatal conductance (mmol H2O m^-2 s^-1, numeric).}
+#'   \item{A}{Photosynthetic rate (µmol CO2 m^-2 s^-1, numeric).}
+#'   \item{Ci}{Concentration of leaf internal CO2 (µmol CO2 mol^-1, numeric).}
+#'   \item{Area}{The area of the leaf measured (cm^2, numeric).}
+#' }
+#'
+#' @usage data(sunflowers)
+#'
+#' @examples
+#' # Load the dataset
+#' data(sunflowers)
+#'
+#' # View the first few rows
+#' head(sunflowers)
+#'
+#' # Summary statistics for photosynthetic rate (A)
+#' summary(sunflowers$A)
+#'
+#' # Plot the photosynthetic rate vs. PARi
+#' plot(sunflowers$PARi, sunflowers$A,
+#'      xlab = "PAR (µmol m^-2 s^-1)",
+#'      ylab = "Photosynthetic rate (µmol CO2 m^-2 s^-1)")
+#'
+#' @keywords dataset
+#'
+#' @source Data collected by Rebekah Davis at the University of Central Florida.
+#'     *Link dryad?*
+#'
+#' @references
+#'     Davis, R.E., C. M. Mason, E. W. Goolsby 2024 Comparative evolution of
+#'     photosynthetic light response curve: approaches and pitfalls in
+#'     phylogenetic modeling of a function-valued trait. IJPS
+#'
+#'     Kandel, H., A. A. Schneiter, J. F. Miller, D. R. Berglund 2019 Stages of
+#'     Sunflower Development. North Dakota State University Extension
+#'     (https://www.ndsu.edu/agriculture/extension/publications/stages-
+#'     sunflower-development)
+#'
+#'@author Rebekah Davis, University of Central Florida
+"sunflowers"
